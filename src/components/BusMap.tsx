@@ -21,7 +21,6 @@ export default function BusMap({ buses }: BusMapProps) {
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        // @ts-ignore
         attribution="&copy; OpenStreetMap contributors"
       />
       {buses.map((bus, idx) => (
