@@ -23,7 +23,50 @@ const BhuBusDashboard = () => {
     setLanguage(language === "en" ? "dz" : "en");
   };
 
-  const text = {
+  const text: {
+    [key: string]: {
+      appName: string;
+      appSubtitle: string;
+      location: string;
+      connected: string;
+      time: string;
+      tabs: { timing: string; routes: string; live: string; balance: string };
+      timing: {
+        header: string;
+        subtitle: string;
+        fromThimphu: string;
+        toThimphu: string;
+        next: string;
+        following: string;
+        bus: string;
+        driver: string;
+        statusOnTime: string;
+        statusDelayed: string;
+        statusEarly: string;
+        status: string;
+      };
+      routes: {
+        operatingHours: string;
+        frequency: string;
+        totalStops: string;
+        viewFullRoute: string;
+      };
+      live: { header: string; passengers: string; away: string };
+      balance: {
+        header: string;
+        subtitle: string;
+        cardNumber: string;
+        placeholder: string;
+        checkBalance: string;
+        error: string;
+        errorMessage: string;
+        cardBalance: string;
+        lastUsed: string;
+        quickTopUp: string;
+      };
+      langSwitch: string;
+    };
+  } = {
     en: {
       appName: "DrukBus",
       appSubtitle: "Bhutan Transport",
