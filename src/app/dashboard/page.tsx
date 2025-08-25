@@ -15,7 +15,16 @@ const BhuBusDashboard = () => {
   const [activeTab, setActiveTab] = useState("timing");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [cardBalance, setCardBalance] = useState("");
-  const [balanceResult, setBalanceResult] = useState(null);
+  type BalanceResult = {
+    balance?: string;
+    cardNumber?: string;
+    lastUsed?: string;
+    cardType?: string;
+    error?: string;
+  };
+  const [balanceResult, setBalanceResult] = useState<BalanceResult | null>(
+    null
+  );
   const [selectedDirection, setSelectedDirection] = useState("FromThimphu");
   const [language, setLanguage] = useState("en");
 
@@ -289,13 +298,14 @@ const BhuBusDashboard = () => {
         cardNumber: cardBalance,
         lastUsed: "Today, 2:30 PM",
         cardType: "Druk Card",
+        error: undefined,
       });
     } else {
       setBalanceResult({ error: t.balance.errorMessage });
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "On Time":
         return "text-green-700 bg-green-100 border border-green-300";
@@ -662,7 +672,12 @@ const BhuBusDashboard = () => {
                           </p>
                         </div>
                         <div className="text-gray-600 space-y-1 text-xs md:text-sm">
-                          <p>Card: ****{balanceResult.cardNumber.slice(-4)}</p>
+                          <p>
+                            Card: ****
+                            {balanceResult.cardNumber
+                              ? balanceResult.cardNumber.slice(-4)
+                              : ""}
+                          </p>
                           <p>
                             {t.balance.lastUsed}: {balanceResult.lastUsed}
                           </p>
