@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   Bus,
   Clock,
@@ -11,8 +12,10 @@ import {
   Globe,
 } from "lucide-react";
 
+const BusMap = dynamic(() => import("../../components/BusMap"), { ssr: false });
+
 const BhuBusDashboard = () => {
-  const [activeTab, setActiveTab] = useState("timing");
+  const [activeTab, setActiveTab] = useState("live");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [cardBalance, setCardBalance] = useState("");
   type BalanceResult = {
@@ -26,6 +29,9 @@ const BhuBusDashboard = () => {
     null
   );
   const [selectedDirection, setSelectedDirection] = useState("FromThimphu");
+  const [selectedRoute, setSelectedRoute] = useState<
+    null | (typeof busRoutes)[0]
+  >(null);
   const [language, setLanguage] = useState("en");
 
   const toggleLanguage = () => {
@@ -186,33 +192,21 @@ const BhuBusDashboard = () => {
     {
       id: "T1",
       name: "Thimphu Express",
-      destination: "Thimphu → Paro",
+      destination: "Via Hospital",
       color: "bg-orange-500",
     },
     {
       id: "P2",
       name: "Phuentsholing Local",
-      destination: "Phuentsholing → Gelephu",
+      destination: "Via Rinchending",
       color: "bg-blue-500",
-    },
-    {
-      id: "W3",
-      name: "Wangdue Route",
-      destination: "Wangdue → Punakha",
-      color: "bg-green-500",
-    },
-    {
-      id: "B4",
-      name: "Bumthang Connect",
-      destination: "Bumthang → Trongsa",
-      color: "bg-purple-500",
     },
   ];
 
   const busTimings = [
     {
       route: "T1",
-      destination: "Thimphu Capital",
+      destination: "Via Hospital",
       nextArrival: "5 min",
       following: "25 min",
       status: "On Time",
@@ -221,7 +215,7 @@ const BhuBusDashboard = () => {
     },
     {
       route: "P2",
-      destination: "Paro Airport",
+      destination: "Via town",
       nextArrival: "12 min",
       following: "35 min",
       status: "Delayed",
@@ -230,7 +224,7 @@ const BhuBusDashboard = () => {
     },
     {
       route: "W3",
-      destination: "Punakha Dzong",
+      destination: "Via Hospital",
       nextArrival: "18 min",
       following: "42 min",
       status: "On Time",
@@ -239,15 +233,70 @@ const BhuBusDashboard = () => {
     },
     {
       route: "B4",
-      destination: "Trongsa Central",
+      destination: "Via town",
       nextArrival: "28 min",
       following: "55 min",
       status: "On Time",
       busNumber: "BHU-304",
       driver: "Sonam Gyeltshen",
     },
+    {
+      route: "T1",
+      destination: "Via Hospital",
+      nextArrival: "5 min",
+      following: "25 min",
+      status: "On Time",
+      busNumber: "BHU-001",
+      driver: "Pema Tshering",
+    },
+    {
+      route: "P2",
+      destination: "Via town",
+      nextArrival: "12 min",
+      following: "35 min",
+      status: "Delayed",
+      busNumber: "BHU-102",
+      driver: "Karma Dorji",
+    },
+    {
+      route: "T1",
+      destination: "Via Hospital",
+      nextArrival: "5 min",
+      following: "25 min",
+      status: "On Time",
+      busNumber: "BHU-001",
+      driver: "Pema Tshering",
+    },
+    {
+      route: "P2",
+      destination: "Via town",
+      nextArrival: "12 min",
+      following: "35 min",
+      status: "Delayed",
+      busNumber: "BHU-102",
+      driver: "Karma Dorji",
+    },
+    {
+      route: "T1",
+      destination: "Via Hospital",
+      nextArrival: "5 min",
+      following: "25 min",
+      status: "On Time",
+      busNumber: "BHU-001",
+      driver: "Pema Tshering",
+    },
+    {
+      route: "P2",
+      destination: "Via town",
+      nextArrival: "12 min",
+      following: "35 min",
+      status: "Delayed",
+      busNumber: "BHU-102",
+      driver: "Karma Dorji",
+    },
   ];
 
+  // Mock bus data for map
   const liveBuses = [
     {
       id: "BHU-001",
@@ -256,6 +305,9 @@ const BhuBusDashboard = () => {
       distance: "2.3 km",
       passengers: 38,
       driver: "Pema Tshering",
+      lat: 27.4728,
+      lng: 89.6391,
+      eta: 5,
     },
     {
       id: "BHU-102",
@@ -264,6 +316,9 @@ const BhuBusDashboard = () => {
       distance: "5.1 km",
       passengers: 24,
       driver: "Karma Dorji",
+      lat: 27.483,
+      lng: 89.65,
+      eta: 12,
     },
     {
       id: "BHU-203",
@@ -272,6 +327,9 @@ const BhuBusDashboard = () => {
       distance: "8.7 km",
       passengers: 45,
       driver: "Tashi Wangchuk",
+      lat: 27.491,
+      lng: 89.67,
+      eta: 18,
     },
     {
       id: "BHU-304",
@@ -280,6 +338,9 @@ const BhuBusDashboard = () => {
       distance: "12.4 km",
       passengers: 52,
       driver: "Sonam Gyeltshen",
+      lat: 27.5,
+      lng: 89.69,
+      eta: 28,
     },
   ];
 
@@ -317,9 +378,9 @@ const BhuBusDashboard = () => {
   };
 
   const sidebarItems = [
+    { id: "live", label: t.tabs.live, icon: MapPin },
     { id: "timing", label: t.tabs.timing, icon: Clock },
     { id: "routes", label: t.tabs.routes, icon: Route },
-    { id: "live", label: t.tabs.live, icon: MapPin },
     { id: "balance", label: t.tabs.balance, icon: CreditCard },
   ];
 
@@ -371,7 +432,7 @@ const BhuBusDashboard = () => {
           })}
         </nav>
 
-        <div className="absolute bottom-0 w-full p-4 md:p-6 relative z-10 hidden md:block">
+        <div className="absolute bottom-0 w-full p-4 md:p-6 z-10 hidden md:block">
           <div className="flex items-center space-x-3 text-green-400 mb-2">
             <Wifi className="w-5 h-5" />
             <span className="font-medium text-sm">{t.connected}</span>
@@ -518,24 +579,81 @@ const BhuBusDashboard = () => {
           )}
 
           {activeTab === "routes" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-              {busRoutes.map((route) => (
-                <div
-                  key={route.id}
-                  className="bg-white rounded-xl p-6 md:p-8 shadow-md border-l-4 border-red-600 hover:shadow-lg transition-all duration-300"
-                >
+            <>
+              {!selectedRoute ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  {busRoutes.map((route) => (
+                    <button
+                      key={route.id}
+                      onClick={() => setSelectedRoute(route)}
+                      className="bg-white rounded-xl p-6 md:p-8 shadow-md border-l-4 border-red-600 hover:shadow-lg transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-red-400"
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="flex items-center space-x-3 md:space-x-4 mb-3 md:mb-4">
+                        <div
+                          className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${route.color}`}
+                        >
+                          <Bus className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                        </div>
+                        <h3 className="text-lg md:text-xl font-bold text-gray-800">
+                          {route.name}
+                        </h3>
+                      </div>
+                      <p className="text-gray-500 text-sm mb-4 md:mb-6">
+                        {route.destination}
+                      </p>
+                      <div className="space-y-3 md:space-y-4 text-xs md:text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">
+                            {t.routes.operatingHours}:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            5:30 AM - 10:30 PM
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">
+                            {t.routes.frequency}:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            Every 20-30 min
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">
+                            {t.routes.totalStops}:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            15 stops
+                          </span>
+                        </div>
+                      </div>
+                      <span className="block w-full mt-4 md:mt-6 bg-red-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg hover:bg-red-700 transition-all shadow-md font-semibold text-sm text-center">
+                        {t.routes.viewFullRoute}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="max-w-lg mx-auto bg-white rounded-xl p-6 md:p-8 shadow-md border-l-4 border-red-600">
+                  <button
+                    onClick={() => setSelectedRoute(null)}
+                    className="mb-4 text-sm text-red-600 hover:underline focus:outline-none"
+                  >
+                    ← Back
+                  </button>
                   <div className="flex items-center space-x-3 md:space-x-4 mb-3 md:mb-4">
                     <div
-                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${route.color}`}
+                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${selectedRoute.color}`}
                     >
                       <Bus className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     </div>
                     <h3 className="text-lg md:text-xl font-bold text-gray-800">
-                      {route.name}
+                      {selectedRoute.name}
                     </h3>
                   </div>
                   <p className="text-gray-500 text-sm mb-4 md:mb-6">
-                    {route.destination}
+                    {selectedRoute.destination}
                   </p>
                   <div className="space-y-3 md:space-y-4 text-xs md:text-sm">
                     <div className="flex justify-between items-center">
@@ -563,12 +681,22 @@ const BhuBusDashboard = () => {
                       </span>
                     </div>
                   </div>
-                  <button className="w-full mt-4 md:mt-6 bg-red-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg hover:bg-red-700 transition-all shadow-md font-semibold text-sm">
-                    {t.routes.viewFullRoute}
-                  </button>
+                  {/* Example: Add more detailed info here if available */}
+                  <div className="mt-6">
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      Route Details
+                    </h4>
+                    <ul className="list-disc list-inside text-gray-600 text-sm space-y-1">
+                      <li>Stop 1: Main Terminal</li>
+                      <li>Stop 2: Hospital</li>
+                      <li>Stop 3: Rinchending</li>
+                      <li>Stop 4: Town Center</li>
+                      <li>Stop 5: Final Stop</li>
+                    </ul>
+                  </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
 
           {activeTab === "live" && (
@@ -578,6 +706,11 @@ const BhuBusDashboard = () => {
                   <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse mr-2"></div>
                   {t.live.header}
                 </h3>
+                {/* Bus Map */}
+                <div className="mb-6">
+                  <BusMap buses={liveBuses} />
+                </div>
+                {/* List of live buses below the map (optional, can keep for details) */}
                 <div className="space-y-3 md:space-y-4">
                   {liveBuses.map((bus) => (
                     <div

@@ -1,5 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useEffect, useState } from "react";
 
 type Bus = {
   id: string | number;
@@ -13,6 +14,16 @@ interface BusMapProps {
 }
 
 export default function BusMap({ buses }: BusMapProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(typeof window !== "undefined");
+  }, []);
+
+  if (!isClient) {
+    return <div style={{ height: "400px" }} />;
+  }
+
   return (
     <MapContainer
       center={[27.4728, 89.6391]}
