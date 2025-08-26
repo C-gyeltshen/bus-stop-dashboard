@@ -1,5 +1,7 @@
 "use client";
 
+import ThimphuBusSchedule from "../thimphu/page";
+import PhuntsholingBusSchedule from "../timing/page";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -28,10 +30,21 @@ const BhuBusDashboard = () => {
   const [balanceResult, setBalanceResult] = useState<BalanceResult | null>(
     null
   );
+  // Use 'FromThimphu' and 'ToThimphu' to match the button logic and conditional rendering
   const [selectedDirection, setSelectedDirection] = useState("FromThimphu");
-  const [selectedRoute, setSelectedRoute] = useState<
-    null | (typeof busRoutes)[0]
-  >(null);
+  const busRoutes = [
+    {
+      id: "T1",
+      name: "Thimphu",
+      color: "bg-orange-500",
+    },
+    {
+      id: "P2",
+      name: "Phuentsholing",
+      color: "bg-blue-500",
+    },
+  ];
+  const [selectedRoute, setSelectedRoute] = useState<null | (typeof busRoutes)[0]>(null);
   const [language, setLanguage] = useState("en");
 
   const toggleLanguage = () => {
@@ -188,20 +201,6 @@ const BhuBusDashboard = () => {
 
   const t = text[language];
 
-  const busRoutes = [
-    {
-      id: "T1",
-      name: "Thimphu Express",
-      destination: "Via Hospital",
-      color: "bg-orange-500",
-    },
-    {
-      id: "P2",
-      name: "Phuentsholing Local",
-      destination: "Via Rinchending",
-      color: "bg-blue-500",
-    },
-  ];
 
   const busTimings = [
     {
@@ -478,9 +477,9 @@ const BhuBusDashboard = () => {
                   {t.timing.fromThimphu}
                 </button>
                 <button
-                  onClick={() => setSelectedDirection("ToThimphu")}
+                  onClick={() => setSelectedDirection("ToPhuntsholing")}
                   className={`px-3 md:px-4 py-2 rounded-full transition-all text-sm font-medium ${
-                    selectedDirection === "ToThimphu"
+                    selectedDirection === "ToPhuntsholing"
                       ? "bg-red-600 text-white shadow-md"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
@@ -504,76 +503,17 @@ const BhuBusDashboard = () => {
                         {route.name}
                       </h3>
                     </div>
-                    <p className="text-xs md:text-sm text-gray-500">
-                      {route.destination}
-                    </p>
                   </div>
                 ))}
               </div>
 
-              {/* Today's Schedule */}
+              {/* Show Thimphu or Phuntsholing schedule based on selectedDirection */}
               <div className="bg-white rounded-xl shadow-md border-t-4 border-red-600 overflow-hidden">
-                <div className="bg-gray-50 px-4 md:px-6 py-3 md:py-4">
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {t.timing.header}
-                  </h3>
-                  <p className="text-gray-500 text-sm">{t.timing.subtitle}</p>
-                </div>
-
-                <div className="divide-y divide-gray-200">
-                  {busTimings.map((bus, index) => (
-                    <div
-                      key={index}
-                      className="p-4 md:p-6 hover:bg-gray-50 transition-all duration-300"
-                    >
-                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-                        <div className="flex items-center space-x-4 md:space-x-6 mb-3 md:mb-0">
-                          <div className="p-2 md:p-3 bg-gray-200 rounded-lg">
-                            <Bus className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
-                          </div>
-                          <div>
-                            <h4 className="text-base md:text-lg font-bold text-gray-800">
-                              {bus.destination}
-                            </h4>
-                            <p className="text-gray-600 text-xs md:text-sm">
-                              {t.timing.bus} #{bus.busNumber}
-                            </p>
-                            <p className="text-xs md:text-sm text-blue-600">
-                              {t.timing.driver}: {bus.driver}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-4 md:space-x-6 w-full md:w-auto justify-between md:justify-start">
-                          <div className="text-center">
-                            <p className="text-xl md:text-2xl font-bold text-red-600">
-                              {bus.nextArrival}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {t.timing.next}
-                            </p>
-                          </div>
-                          <div className="text-center hidden sm:block">
-                            <p className="text-base md:text-lg font-semibold text-gray-600">
-                              {bus.following}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {t.timing.following}
-                            </p>
-                          </div>
-                          <div
-                            className={`px-2 md:px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
-                              bus.status
-                            )}`}
-                          >
-                            {bus.status === "On Time"
-                              ? t.timing.statusOnTime
-                              : t.timing.statusDelayed}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {selectedDirection === "FromThimphu" ? (
+                  <ThimphuBusSchedule />
+                ) : selectedDirection === "ToPhuntsholing" ? (
+                  <PhuntsholingBusSchedule />
+                ) : null}
               </div>
             </div>
           )}
@@ -600,7 +540,7 @@ const BhuBusDashboard = () => {
                         </h3>
                       </div>
                       <p className="text-gray-500 text-sm mb-4 md:mb-6">
-                        {route.destination}
+                        {/* No destination property, so nothing to show here */}
                       </p>
                       <div className="space-y-3 md:space-y-4 text-xs md:text-sm">
                         <div className="flex justify-between items-center">
@@ -653,7 +593,7 @@ const BhuBusDashboard = () => {
                     </h3>
                   </div>
                   <p className="text-gray-500 text-sm mb-4 md:mb-6">
-                    {selectedRoute.destination}
+                    {/* No destination property, so nothing to show here */}
                   </p>
                   <div className="space-y-3 md:space-y-4 text-xs md:text-sm">
                     <div className="flex justify-between items-center">
