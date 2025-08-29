@@ -20,6 +20,7 @@ const BhuBusDashboard = () => {
   const [activeTab, setActiveTab] = useState("live");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [cardBalance, setCardBalance] = useState("");
+  const [mounted, setMounted] = useState(false);
   type BalanceResult = {
     balance?: string;
     cardNumber?: string;
@@ -96,7 +97,7 @@ const BhuBusDashboard = () => {
     };
   } = {
     en: {
-      appName: "DrukBus",
+      appName:"Khorlam Palri",
       appSubtitle: "Bhutan Transport",
       location: "Phuentsholing Central",
       connected: "Connected",
@@ -110,8 +111,8 @@ const BhuBusDashboard = () => {
       timing: {
         header: "Today's Schedule",
         subtitle: "Live bus arrivals and departures",
-        fromThimphu: "From Thimphu",
-        toThimphu: "To Thimphu",
+        fromThimphu: "Thimphu",
+        toThimphu: "Phuntsholing",
         next: "Next",
         following: "Following",
         bus: "Bus",
@@ -201,100 +202,6 @@ const BhuBusDashboard = () => {
 
   const t = text[language];
 
-
-  const busTimings = [
-    {
-      route: "T1",
-      destination: "Via Hospital",
-      nextArrival: "5 min",
-      following: "25 min",
-      status: "On Time",
-      busNumber: "BHU-001",
-      driver: "Pema Tshering",
-    },
-    {
-      route: "P2",
-      destination: "Via town",
-      nextArrival: "12 min",
-      following: "35 min",
-      status: "Delayed",
-      busNumber: "BHU-102",
-      driver: "Karma Dorji",
-    },
-    {
-      route: "W3",
-      destination: "Via Hospital",
-      nextArrival: "18 min",
-      following: "42 min",
-      status: "On Time",
-      busNumber: "BHU-203",
-      driver: "Tashi Wangchuk",
-    },
-    {
-      route: "B4",
-      destination: "Via town",
-      nextArrival: "28 min",
-      following: "55 min",
-      status: "On Time",
-      busNumber: "BHU-304",
-      driver: "Sonam Gyeltshen",
-    },
-    {
-      route: "T1",
-      destination: "Via Hospital",
-      nextArrival: "5 min",
-      following: "25 min",
-      status: "On Time",
-      busNumber: "BHU-001",
-      driver: "Pema Tshering",
-    },
-    {
-      route: "P2",
-      destination: "Via town",
-      nextArrival: "12 min",
-      following: "35 min",
-      status: "Delayed",
-      busNumber: "BHU-102",
-      driver: "Karma Dorji",
-    },
-    {
-      route: "T1",
-      destination: "Via Hospital",
-      nextArrival: "5 min",
-      following: "25 min",
-      status: "On Time",
-      busNumber: "BHU-001",
-      driver: "Pema Tshering",
-    },
-    {
-      route: "P2",
-      destination: "Via town",
-      nextArrival: "12 min",
-      following: "35 min",
-      status: "Delayed",
-      busNumber: "BHU-102",
-      driver: "Karma Dorji",
-    },
-    {
-      route: "T1",
-      destination: "Via Hospital",
-      nextArrival: "5 min",
-      following: "25 min",
-      status: "On Time",
-      busNumber: "BHU-001",
-      driver: "Pema Tshering",
-    },
-    {
-      route: "P2",
-      destination: "Via town",
-      nextArrival: "12 min",
-      following: "35 min",
-      status: "Delayed",
-      busNumber: "BHU-102",
-      driver: "Karma Dorji",
-    },
-  ];
-
   // Mock bus data for map
   const liveBuses = [
     {
@@ -344,6 +251,7 @@ const BhuBusDashboard = () => {
   ];
 
   useEffect(() => {
+    setMounted(true); 
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -365,21 +273,9 @@ const BhuBusDashboard = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "On Time":
-        return "text-green-700 bg-green-100 border border-green-300";
-      case "Delayed":
-        return "text-red-700 bg-red-100 border border-red-300";
-      default:
-        return "text-gray-700 bg-gray-100 border border-gray-300";
-    }
-  };
-
   const sidebarItems = [
     { id: "live", label: t.tabs.live, icon: MapPin },
     { id: "timing", label: t.tabs.timing, icon: Clock },
-    { id: "routes", label: t.tabs.routes, icon: Route },
     { id: "balance", label: t.tabs.balance, icon: CreditCard },
   ];
 
@@ -399,6 +295,7 @@ const BhuBusDashboard = () => {
               <p className="text-gray-400 text-sm">{t.appSubtitle}</p>
             </div>
           </div>
+          {/* language switch */}
           <button
             onClick={toggleLanguage}
             className="md:mt-4 p-2 md:p-1 text-xs rounded-lg text-white bg-slate-800 hover:bg-slate-700 transition-colors flex items-center space-x-1"
@@ -437,7 +334,7 @@ const BhuBusDashboard = () => {
             <span className="font-medium text-sm">{t.connected}</span>
           </div>
           <p className="text-gray-400 text-sm">
-            {t.time}: {currentTime.toLocaleTimeString()}
+            {t.time}: {mounted ? currentTime.toLocaleTimeString() : "--:--:--"}
           </p>
         </div>
       </div>
@@ -489,23 +386,7 @@ const BhuBusDashboard = () => {
               </div>
 
               {/* Route Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-4 md:mb-8">
-                {busRoutes.map((route) => (
-                  <div
-                    key={route.id}
-                    className="bg-white rounded-xl p-4 md:p-6 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                  >
-                    <div className="flex items-center space-x-2 md:space-x-4 mb-2 md:mb-3">
-                      <div
-                        className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${route.color}`}
-                      ></div>
-                      <h3 className="font-bold text-base md:text-lg text-gray-800">
-                        {route.name}
-                      </h3>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              
 
               {/* Show Thimphu or Phuntsholing schedule based on selectedDirection */}
               <div className="bg-white rounded-xl shadow-md border-t-4 border-red-600 overflow-hidden">
