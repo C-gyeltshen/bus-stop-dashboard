@@ -9,7 +9,6 @@ import {
   Clock,
   MapPin,
   CreditCard,
-  Route,
   Wifi,
   Globe,
 } from "lucide-react";
@@ -148,7 +147,7 @@ const BhuBusDashboard = () => {
       langSwitch: "Dzongkha",
     },
     dz: {
-      appName: "འབྲུག་འགྲུལ་འཁོར།",
+      appName: "འཁོར་ལམ་དཔལ་རི།",
       appSubtitle: "འབྲུག་གི་འགྲུལ་འཁོར།",
       location: "ཕུན་ཚོགས་གླིང་སི་མ།",
       connected: "སྦྲེལ་བ་ཡོད།",
