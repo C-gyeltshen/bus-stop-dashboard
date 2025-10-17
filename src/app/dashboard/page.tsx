@@ -2,16 +2,9 @@
 
 import ThimphuBusSchedule from "../thimphu/page";
 import PhuntsholingBusSchedule from "../timing/page";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import {
-  Bus,
-  Clock,
-  MapPin,
-  CreditCard,
-  Wifi,
-  Globe,
-} from "lucide-react";
+import { Bus, Clock, MapPin, CreditCard, Wifi, Globe } from "lucide-react";
 
 const BusMap = dynamic(() => import("../../components/BusMap"), { ssr: false });
 
@@ -20,6 +13,9 @@ const BhuBusDashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [cardBalance, setCardBalance] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   type BalanceResult = {
     balance?: string;
     cardNumber?: string;
@@ -44,7 +40,9 @@ const BhuBusDashboard = () => {
       color: "bg-blue-500",
     },
   ];
-  const [selectedRoute, setSelectedRoute] = useState<null | (typeof busRoutes)[0]>(null);
+  const [selectedRoute, setSelectedRoute] = useState<
+    null | (typeof busRoutes)[0]
+  >(null);
   const [language, setLanguage] = useState("en");
 
   const toggleLanguage = () => {
@@ -96,7 +94,7 @@ const BhuBusDashboard = () => {
     };
   } = {
     en: {
-      appName:"Khorlam Palri",
+      appName: "Khorlam Palri",
       appSubtitle: "Bhutan Transport",
       location: "Phuentsholing Central",
       connected: "Connected",
@@ -250,12 +248,49 @@ const BhuBusDashboard = () => {
   ];
 
   useEffect(() => {
-    setMounted(true); 
+    setMounted(true);
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Enable audio on first user interaction
+  useEffect(() => {
+    const playAudio = () => {
+      audioRef.current?.play().catch((error: Error) => {
+        console.error("Audio playback failed:", error);
+      });
+    };
+
+    const enableAudio = () => {
+      if (!audioEnabled && audioRef.current) {
+        setAudioEnabled(true);
+        // Play audio after 10 seconds once enabled
+        setTimeout(playAudio, 10000);
+      }
+    };
+
+    // Listen for any user interaction
+    document.addEventListener("click", enableAudio, { once: true });
+    document.addEventListener("keydown", enableAudio, { once: true });
+    document.addEventListener("touchstart", enableAudio, { once: true });
+
+    return () => {
+      document.removeEventListener("click", enableAudio);
+      document.removeEventListener("keydown", enableAudio);
+      document.removeEventListener("touchstart", enableAudio);
+    };
+  }, [audioEnabled]);
+
+  // Handler for play audio button
+  const handlePlayAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch((error: Error) => {
+        console.error("Audio playback failed:", error);
+      });
+    }
+  };
 
   const checkBalance = () => {
     if (cardBalance.length >= 8) {
@@ -280,6 +315,26 @@ const BhuBusDashboard = () => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 font-sans text-gray-800">
+      {/* Audio Element - Plays after user interaction */}
+      <audio
+        ref={audioRef}
+        src="sys-audio.mp3"
+        preload="auto"
+        aria-label="Notification sound"
+      >
+        <track kind="captions" />
+      </audio>
+
+      {/* Play Audio Button */}
+      <div style={{ position: "absolute", top: 16, right: 16, zIndex: 20 }}>
+        <button
+          onClick={handlePlayAudio}
+          className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow-md transition-colors"
+        >
+          Play Audio
+        </button>
+      </div>
+
       {/* Sidebar */}
       <div className="md:w-64 bg-slate-900 shadow-2xl relative overflow-hidden transition-all duration-300">
         <div className="p-4 md:p-6 relative z-10 border-b border-slate-700 flex justify-between items-center md:flex-col md:items-start">
@@ -385,76 +440,20 @@ const BhuBusDashboard = () => {
               </div>
 
               {/* Route Cards */}
-              
 
               {/* Show Thimphu or Phuntsholing schedule based on selectedDirection */}
               <div className="bg-white rounded-xl shadow-md border-t-4 border-red-600 overflow-hidden">
-                {selectedDirection === "FromThimphu" ? (
-                  <ThimphuBusSchedule />
-                ) : selectedDirection === "ToPhuntsholing" ? (
+                {selectedDirection === "FromThimphu" && <ThimphuBusSchedule />}
+                {selectedDirection === "ToPhuntsholing" && (
                   <PhuntsholingBusSchedule />
-                ) : null}
+                )}
               </div>
             </div>
           )}
 
           {activeTab === "routes" && (
             <>
-              {!selectedRoute ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                  {busRoutes.map((route) => (
-                    <button
-                      key={route.id}
-                      onClick={() => setSelectedRoute(route)}
-                      className="bg-white rounded-xl p-6 md:p-8 shadow-md border-l-4 border-red-600 hover:shadow-lg transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-red-400"
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="flex items-center space-x-3 md:space-x-4 mb-3 md:mb-4">
-                        <div
-                          className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${route.color}`}
-                        >
-                          <Bus className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                        </div>
-                        <h3 className="text-lg md:text-xl font-bold text-gray-800">
-                          {route.name}
-                        </h3>
-                      </div>
-                      <p className="text-gray-500 text-sm mb-4 md:mb-6">
-                        {/* No destination property, so nothing to show here */}
-                      </p>
-                      <div className="space-y-3 md:space-y-4 text-xs md:text-sm">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">
-                            {t.routes.operatingHours}:
-                          </span>
-                          <span className="font-semibold text-gray-800">
-                            5:30 AM - 10:30 PM
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">
-                            {t.routes.frequency}:
-                          </span>
-                          <span className="font-semibold text-gray-800">
-                            Every 20-30 min
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">
-                            {t.routes.totalStops}:
-                          </span>
-                          <span className="font-semibold text-gray-800">
-                            15 stops
-                          </span>
-                        </div>
-                      </div>
-                      <span className="block w-full mt-4 md:mt-6 bg-red-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg hover:bg-red-700 transition-all shadow-md font-semibold text-sm text-center">
-                        {t.routes.viewFullRoute}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
+              {selectedRoute ? (
                 <div className="max-w-lg mx-auto bg-white rounded-xl p-6 md:p-8 shadow-md border-l-4 border-red-600">
                   <button
                     onClick={() => setSelectedRoute(null)}
@@ -514,6 +513,60 @@ const BhuBusDashboard = () => {
                       <li>Stop 5: Final Stop</li>
                     </ul>
                   </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  {busRoutes.map((route) => (
+                    <button
+                      key={route.id}
+                      onClick={() => setSelectedRoute(route)}
+                      className="bg-white rounded-xl p-6 md:p-8 shadow-md border-l-4 border-red-600 hover:shadow-lg transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-red-400"
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="flex items-center space-x-3 md:space-x-4 mb-3 md:mb-4">
+                        <div
+                          className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center ${route.color}`}
+                        >
+                          <Bus className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                        </div>
+                        <h3 className="text-lg md:text-xl font-bold text-gray-800">
+                          {route.name}
+                        </h3>
+                      </div>
+                      <p className="text-gray-500 text-sm mb-4 md:mb-6">
+                        {/* No destination property, so nothing to show here */}
+                      </p>
+                      <div className="space-y-3 md:space-y-4 text-xs md:text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">
+                            {t.routes.operatingHours}:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            5:30 AM - 10:30 PM
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">
+                            {t.routes.frequency}:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            Every 20-30 min
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">
+                            {t.routes.totalStops}:
+                          </span>
+                          <span className="font-semibold text-gray-800">
+                            15 stops
+                          </span>
+                        </div>
+                      </div>
+                      <span className="block w-full mt-4 md:mt-6 bg-red-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-lg hover:bg-red-700 transition-all shadow-md font-semibold text-sm text-center">
+                        {t.routes.viewFullRoute}
+                      </span>
+                    </button>
+                  ))}
                 </div>
               )}
             </>
