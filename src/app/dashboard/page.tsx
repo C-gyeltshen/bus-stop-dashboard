@@ -255,23 +255,15 @@ const BhuBusDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Enable audio on first user interaction
+  // Enable audio on first user interaction (without auto-playing)
   useEffect(() => {
-    const playAudio = () => {
-      audioRef.current?.play().catch((error: Error) => {
-        console.error("Audio playback failed:", error);
-      });
-    };
-
     const enableAudio = () => {
-      if (!audioEnabled && audioRef.current) {
+      if (!audioEnabled) {
         setAudioEnabled(true);
-        // Play audio after 10 seconds once enabled
-        setTimeout(playAudio, 10000);
       }
     };
 
-    // Listen for any user interaction
+    // Listen for any user interaction to enable audio context
     document.addEventListener("click", enableAudio, { once: true });
     document.addEventListener("keydown", enableAudio, { once: true });
     document.addEventListener("touchstart", enableAudio, { once: true });
