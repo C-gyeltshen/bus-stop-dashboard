@@ -1,47 +1,25 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Volume2, ChevronRight } from "lucide-react";
 
+// Extend globalThis to include persistentAudio
+declare global {
+  // eslint-disable-next-line no-var
+  var persistentAudio: HTMLAudioElement | undefined;
+}
+
 export default function SplashScreen() {
   const [isEntering, setIsEntering] = useState(false);
-  const [audioReady, setAudioReady] = useState(false);
-  const [countdown, setCountdown] = useState(0);
   const router = useRouter();
-
-  useEffect(() => {
-    // Wait for persistent audio to be available
-    const checkAudio = setInterval(() => {
-      if ((window as any).persistentAudio) {
-        setAudioReady(true);
-        clearInterval(checkAudio);
-      }
-    }, 1000);
-
-    return () => clearInterval(checkAudio);
-  }, []);
-
-  useEffect(() => {
-    // Countdown and redirect after 5 seconds
-    if (isEntering && countdown > 0) {
-      const timer = setTimeout(() => {
-        if (countdown === 8) {
-          router.push("/BhuBusDashboard");
-        } else {
-          setCountdown(countdown - 1);
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isEntering, countdown, router]);
 
   const handleEnter = async () => {
     if (!isEntering) {
       setIsEntering(true);
-      
+
       try {
         // Access the persistent audio element from layout
-        const audio = (window as any).persistentAudio as HTMLAudioElement;
+        const audio = globalThis.persistentAudio;
         if (audio) {
           audio.currentTime = 0; // Reset to start
           await audio.play();
@@ -200,8 +178,6 @@ export default function SplashScreen() {
           <ChevronRight size={20} />
         </button>
       </div>
-
-
     </div>
   );
 }
