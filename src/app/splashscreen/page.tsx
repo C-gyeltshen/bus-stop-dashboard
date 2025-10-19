@@ -26,7 +26,7 @@ export default function SplashScreen() {
     if (isEntering && countdown > 0) {
       const timer = setTimeout(() => {
         if (countdown === 8) {
-          router.push("/");
+          router.push("/BhuBusDashboard");
         } else {
           setCountdown(countdown - 1);
         }
@@ -55,7 +55,7 @@ export default function SplashScreen() {
 
       // Use Next.js router for client-side navigation to keep audio playing
       setTimeout(() => {
-        router.push("/");
+        router.push("/dashboard");
       }, 100);
     }
   };
@@ -187,7 +187,7 @@ export default function SplashScreen() {
       `}</style>
 
       <div className="splash-container">
-        <h1 className="splash-title">Khorlam Pelray</h1>
+        <h1 className="splash-title">Khorlam Pelri</h1>
         <p className="splash-subtitle">Welcome to the journey</p>
 
         <button

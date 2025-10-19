@@ -1,8 +1,7 @@
-import Image from "next/image";
-import BhuBusDashboard from "./dashboard/page";
+import SplashScreen from "./splashscreen/page";
 
 export default function Home() {
   return (
-    <BhuBusDashboard />
+    <SplashScreen />
   );
 }
